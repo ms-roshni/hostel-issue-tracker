@@ -66,7 +66,7 @@ const IssueCard = ({ issue, role, currentUserId, onVerify, onToggle, onArchive }
             onClick={() => setIsModalOpen(true)}
           >
             <img 
-              src={`http://localhost:8000${issue.image}`} 
+              src={`https://hostel-issue-tracker-1d9f.onrender.com${issue.image}`} 
               alt="Issue attached" 
               style={{ width: "100%", height: "100%", objectFit: "cover", transition: "transform var(--transition-normal)" }} 
               onMouseOver={e => e.target.style.transform = "scale(1.05)"}
@@ -144,7 +144,7 @@ const IssueCard = ({ issue, role, currentUserId, onVerify, onToggle, onArchive }
             &times;
           </button>
           <img 
-            src={`http://localhost:8000${issue.image}`} 
+            src={`https://hostel-issue-tracker-1d9f.onrender.com${issue.image}`} 
             alt="Expanded view" 
             style={{ 
               maxWidth: "90vw", 

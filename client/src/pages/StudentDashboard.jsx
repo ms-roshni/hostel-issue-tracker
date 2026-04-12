@@ -36,7 +36,7 @@ function StudentDashboard() {
 
   const fetchIssues = async () => {
     try {
-      const res = await axios.get("http://localhost:8000/api/issues", {
+      const res = await axios.get("https://hostel-issue-tracker-1d9f.onrender.com/api/issues", {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -81,7 +81,7 @@ function StudentDashboard() {
         formData.append("image", image);
       }
 
-      await axios.post("http://localhost:8000/api/issues", formData, {
+      await axios.post("https://hostel-issue-tracker-1d9f.onrender.com/api/issues", formData, {
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "multipart/form-data",
@@ -107,7 +107,7 @@ function StudentDashboard() {
 
   const verifyIssue = async (id) => {
     try {
-      await axios.put(`http://localhost:8000/api/issues/${id}/verify`, {}, {
+      await axios.put(`https://hostel-issue-tracker-1d9f.onrender.com/api/issues/${id}/verify`, {}, {
         headers: { Authorization: `Bearer ${token}` },
       });
       fetchIssues();

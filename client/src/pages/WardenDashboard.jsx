@@ -23,7 +23,7 @@ function WardenDashboard() {
 
   const fetchIssues = async () => {
     try {
-      const res = await axios.get("http://localhost:8000/api/issues", {
+      const res = await axios.get("https://hostel-issue-tracker-1d9f.onrender.com/api/issues", {
         headers: { Authorization: `Bearer ${token}` },
       });
       setIssues(res.data);
@@ -60,7 +60,7 @@ function WardenDashboard() {
   const toggleStatus = async (id, currentStatus) => {
     const newStatus = currentStatus === "pending" ? "resolved" : "pending";
     try {
-      await axios.put(`http://localhost:8000/api/issues/${id}`, { status: newStatus }, {
+      await axios.put(`https://hostel-issue-tracker-1d9f.onrender.com/api/issues/${id}`, { status: newStatus }, {
         headers: { Authorization: `Bearer ${token}` },
       });
       fetchIssues();
@@ -72,7 +72,7 @@ function WardenDashboard() {
   const archiveIssue = async (id) => {
     if(!window.confirm("Are you sure you want to remove this completed issue?")) return;
     try {
-      await axios.put(`http://localhost:8000/api/issues/${id}/archive`, {}, {
+      await axios.put(`https://hostel-issue-tracker-1d9f.onrender.com/api/issues/${id}/archive`, {}, {
         headers: { Authorization: `Bearer ${token}` },
       });
       fetchIssues();

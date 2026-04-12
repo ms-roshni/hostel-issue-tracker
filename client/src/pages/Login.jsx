@@ -17,7 +17,7 @@ function Login() {
     e.preventDefault();
     setError("");
     try {
-      const res = await axios.post("http://localhost:8000/api/auth/login", { username, password });
+      const res = await axios.post("https://hostel-issue-tracker-1d9f.onrender.com/api/auth/login", { username, password });
       localStorage.setItem("token", res.data.token);
       localStorage.setItem("username", res.data.name);
       navigate("/dashboard");
@@ -30,7 +30,7 @@ function Login() {
     e.preventDefault();
     setError("");
     try {
-      const res = await axios.post("http://localhost:8000/api/auth/warden-login", { secretKey });
+      const res = await axios.post("https://hostel-issue-tracker-1d9f.onrender.com/api/auth/warden-login", { secretKey });
       localStorage.setItem("token", res.data.token);
       localStorage.setItem("username", res.data.name || "Warden");
       navigate("/warden");

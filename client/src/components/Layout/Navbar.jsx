@@ -23,7 +23,7 @@ const Navbar = ({ role, onContactClick }) => {
   const executeDelete = async () => {
     try {
       const token = localStorage.getItem("token");
-      await axios.delete("http://localhost:8000/api/auth/me", {
+      await axios.delete("https://hostel-issue-tracker-1d9f.onrender.com/api/auth/me", {
         headers: { Authorization: `Bearer ${token}` }
       });
       localStorage.removeItem("token");

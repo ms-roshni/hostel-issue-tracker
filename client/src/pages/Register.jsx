@@ -24,7 +24,7 @@ function Register() {
     e.preventDefault();
     setError("");
     try {
-      await axios.post("http://localhost:8000/api/auth/register", form);
+      await axios.post("https://hostel-issue-tracker-1d9f.onrender.com/api/auth/register", form);
       navigate("/");
     } catch (error) {
       setError(error.response?.data?.message || "Registration failed. Try again.");
