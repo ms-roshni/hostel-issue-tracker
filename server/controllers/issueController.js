@@ -10,6 +10,7 @@ exports.createIssue = async (req, res) => {
       floor,
       roomNumber,
       issueDate,
+      imageUrl,
     } = req.body;
 
     // 🔥 Basic validation
@@ -41,7 +42,7 @@ exports.createIssue = async (req, res) => {
       roomNumber: numericRoom,
       issueDate: new Date(issueDate),
       createdBy: req.user._id,
-      image: req.file ? `/uploads/${req.file.filename}` : null,
+      image: imageUrl || null,
     });
 
     res.json(issue);
@@ -171,5 +172,24 @@ exports.downloadReport = async (req, res) => {
   } catch (error) {
     console.error("DOWNLOAD REPORT ERROR:", error.message);
     res.status(500).json({ error: error.message });
+  }
+};
+
+// ✅ GET PRESIGNED URL (student)
+const { generateUploadURL } = require("../utils/s3");
+
+exports.getPresignedUrl = async (req, res) => {
+  try {
+    const { fileName, fileType } = req.query;
+    if (!fileName || !fileType) {
+      return res.status(400).json({ message: "Missing fileName or fileType" });
+    }
+    
+    const { uploadUrl, fileUrl } = await generateUploadURL(fileName, fileType);
+    
+    res.json({ uploadUrl, fileUrl });
+  } catch (error) {
+    console.error("PRESIGNED URL ERROR:", error);
+    res.status(500).json({ message: "Failed to generate upload URL" });
   }
 };

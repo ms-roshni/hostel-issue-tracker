@@ -147,3 +147,51 @@ exports.deleteUserAccount = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
+// GET ALL STUDENTS (Warden only)
+exports.getAllStudents = async (req, res) => {
+  try {
+    const students = await User.find({ role: "student" }).select("name usn mobile username");
+    res.json(students);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// RESET CREDENTIALS (Forgot Password)
+exports.resetCredentials = async (req, res) => {
+  try {
+    const { usn, mobile, newUsername, newPassword } = req.body;
+
+    if (!usn || !mobile || !newUsername || !newPassword) {
+      return res.status(400).json({ message: "All fields are required" });
+    }
+
+    if (!/^\d{6}$/.test(newPassword)) {
+      return res.status(400).json({ message: "Password must be exactly a 6-digit number (e.g., 123456)." });
+    }
+
+    const user = await User.findOne({ usn, mobile, role: "student" });
+
+    if (!user) {
+      return res.status(404).json({ message: "No student found matching this USN and Mobile Number." });
+    }
+
+    // Check if new username is taken by someone else
+    const existingUsername = await User.findOne({ username: newUsername, _id: { $ne: user._id } });
+    if (existingUsername) {
+      return res.status(400).json({ message: "This username is already taken. Please choose another." });
+    }
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    
+    user.username = newUsername;
+    user.password = hashedPassword;
+    await user.save();
+
+    res.json({ message: "Credentials updated successfully. You can now log in." });
+  } catch (error) {
+    console.error("Reset Credentials Error:", error);
+    res.status(500).json({ message: "Server error during reset." });
+  }
+};

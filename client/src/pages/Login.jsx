@@ -10,6 +10,13 @@ function Login() {
   const [password, setPassword] = useState("");
   const [secretKey, setSecretKey] = useState("");
   const [error, setError] = useState("");
+  const [successMsg, setSuccessMsg] = useState("");
+
+  const [isForgotMode, setIsForgotMode] = useState(false);
+  const [resetUsn, setResetUsn] = useState("");
+  const [resetMobile, setResetMobile] = useState("");
+  const [newUsername, setNewUsername] = useState("");
+  const [newPassword, setNewPassword] = useState("");
 
   const navigate = useNavigate();
 
@@ -17,7 +24,7 @@ function Login() {
     e.preventDefault();
     setError("");
     try {
-      const res = await axios.post("https://hostel-issue-tracker-1d9f.onrender.com/api/auth/login", { username, password });
+      const res = await axios.post(`${import.meta.env.VITE_API_URL || "http://localhost:8000"}/api/auth/login`, { username, password });
       localStorage.setItem("token", res.data.token);
       localStorage.setItem("username", res.data.name);
       navigate("/dashboard");
@@ -30,12 +37,36 @@ function Login() {
     e.preventDefault();
     setError("");
     try {
-      const res = await axios.post("https://hostel-issue-tracker-1d9f.onrender.com/api/auth/warden-login", { secretKey });
+      const res = await axios.post(`${import.meta.env.VITE_API_URL || "http://localhost:8000"}/api/auth/warden-login`, { secretKey });
       localStorage.setItem("token", res.data.token);
       localStorage.setItem("username", res.data.name || "Warden");
       navigate("/warden");
     } catch (error) {
       setError(error.response?.data?.message || "Invalid Secret Key");
+    }
+  };
+
+  const handleResetCredentials = async (e) => {
+    e.preventDefault();
+    setError("");
+    setSuccessMsg("");
+    try {
+      const res = await axios.post(`${import.meta.env.VITE_API_URL || "http://localhost:8000"}/api/auth/reset-credentials`, {
+        usn: resetUsn,
+        mobile: resetMobile,
+        newUsername,
+        newPassword
+      });
+      setSuccessMsg(res.data.message);
+      setIsForgotMode(false);
+      setUsername(newUsername);
+      setPassword(newPassword);
+      setResetUsn("");
+      setResetMobile("");
+      setNewUsername("");
+      setNewPassword("");
+    } catch (error) {
+      setError(error.response?.data?.message || "Failed to reset credentials");
     }
   };
 
@@ -70,10 +101,11 @@ function Login() {
         </div>
 
         {/* Custom Tabs */}
-        <div style={{ display: "flex", background: "var(--bg-tertiary)", borderRadius: "var(--radius-sm)", marginBottom: "24px", padding: "4px" }}>
-          <button 
-            type="button"
-            onClick={() => { setActiveTab("student"); setError(""); }}
+        {!isForgotMode && (
+          <div style={{ display: "flex", background: "var(--bg-tertiary)", borderRadius: "var(--radius-sm)", marginBottom: "24px", padding: "4px" }}>
+            <button 
+              type="button"
+              onClick={() => { setActiveTab("student"); setError(""); setSuccessMsg(""); }}
             style={{ 
               flex: 1, padding: "8px 0", border: "none", borderRadius: "var(--radius-sm)", cursor: "pointer", fontWeight: "600",
               background: activeTab === "student" ? "var(--accent-primary)" : "transparent",
@@ -83,9 +115,9 @@ function Login() {
           >
             Student
           </button>
-          <button 
-            type="button"
-            onClick={() => { setActiveTab("warden"); setError(""); }}
+            <button 
+              type="button"
+              onClick={() => { setActiveTab("warden"); setError(""); setSuccessMsg(""); }}
             style={{ 
               flex: 1, padding: "8px 0", border: "none", borderRadius: "var(--radius-sm)", cursor: "pointer", fontWeight: "600",
               background: activeTab === "warden" ? "var(--bg-secondary)" : "transparent",
@@ -94,8 +126,9 @@ function Login() {
             }}
           >
             Warden
-          </button>
-        </div>
+            </button>
+          </div>
+        )}
 
         {error && (
           <div style={{ 
@@ -107,14 +140,40 @@ function Login() {
           </div>
         )}
 
-        {activeTab === "student" ? (
+        {successMsg && (
+          <div style={{ 
+            background: "rgba(16, 185, 129, 0.1)", border: "1px solid rgba(16, 185, 129, 0.4)",
+            color: "var(--accent-success)", padding: "12px", borderRadius: "var(--radius-sm)",
+            fontSize: "0.9rem", textAlign: "center", marginBottom: "20px"
+          }}>
+            {successMsg}
+          </div>
+        )}
+
+        {isForgotMode ? (
+          <form onSubmit={handleResetCredentials} style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+            <p style={{ textAlign: "center", fontSize: "0.95rem", color: "var(--text-secondary)", marginBottom: "10px" }}>
+              Enter your USN and registered Mobile Number to verify your identity.
+            </p>
+            <Input label="USN" id="resetUsn" type="text" placeholder="Enter your USN" value={resetUsn} onChange={(e) => setResetUsn(e.target.value)} required />
+            <Input label="Mobile Number" id="resetMobile" type="text" placeholder="Enter your registered mobile" value={resetMobile} onChange={(e) => setResetMobile(e.target.value)} required />
+            <div style={{ height: "1px", background: "var(--border-glass)", margin: "10px 0" }}></div>
+            <Input label="New Username" id="newUsername" type="text" placeholder="Enter new username" value={newUsername} onChange={(e) => setNewUsername(e.target.value)} required />
+            <Input label="New Password (6 digits)" id="newPassword" type="password" placeholder="Enter 6 digit code" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} required />
+            <Button type="submit" variant="primary" style={{ width: "100%", marginTop: "10px", padding: "14px" }}>Reset Credentials</Button>
+            <p style={{ textAlign: "center", marginTop: "12px", fontSize: "0.9rem" }}>
+              <button type="button" onClick={() => { setIsForgotMode(false); setError(""); }} style={{ background: "none", border: "none", color: "var(--text-secondary)", fontWeight: "600", cursor: "pointer", textDecoration: "underline" }}>Back to Login</button>
+            </p>
+          </form>
+        ) : activeTab === "student" ? (
           <form onSubmit={handleStudentLogin} style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
             <Input label="Username" id="username" type="text" placeholder="Enter your username" value={username} onChange={(e) => setUsername(e.target.value)} required />
             <Input label="Password" id="password" type="password" placeholder="Enter your 6 digit code" value={password} onChange={(e) => setPassword(e.target.value)} required />
             <Button type="submit" variant="primary" style={{ width: "100%", marginTop: "10px", padding: "14px" }}>Sign In</Button>
-            <p style={{ textAlign: "center", marginTop: "12px", color: "var(--text-secondary)", fontSize: "0.9rem" }}>
-              Don't have an account? <Link to="/register" style={{ fontWeight: "600" }}>Register here</Link>
-            </p>
+            <div style={{ display: "flex", justifyContent: "space-between", marginTop: "12px", fontSize: "0.9rem" }}>
+              <button type="button" onClick={() => { setIsForgotMode(true); setError(""); setSuccessMsg(""); }} style={{ background: "none", border: "none", color: "var(--text-secondary)", cursor: "pointer" }}>Forgot Credentials?</button>
+              <span style={{ color: "var(--text-secondary)" }}>New here? <Link to="/register" style={{ fontWeight: "600" }}>Register</Link></span>
+            </div>
           </form>
         ) : (
           <form onSubmit={handleWardenLogin} style={{ display: "flex", flexDirection: "column", gap: "20px" }}>

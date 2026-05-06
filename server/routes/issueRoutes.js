@@ -32,6 +32,7 @@ const {
   verifyIssue,
   archiveIssue,
   downloadReport,
+  getPresignedUrl,
 } = controllers || {};
 
 // Validate controller exports
@@ -42,6 +43,7 @@ ensureFn(updateIssueStatus, "updateIssueStatus");
 ensureFn(verifyIssue, "verifyIssue");
 ensureFn(archiveIssue, "archiveIssue");
 ensureFn(downloadReport, "downloadReport");
+ensureFn(getPresignedUrl, "getPresignedUrl");
 
 // Validate middleware exports
 ensureFn(protect, "protect");
@@ -58,8 +60,11 @@ router.get("/my", protect, getMyIssues);
 // Download report (warden only)
 router.get("/report/download", protect, authorizeRoles("warden"), downloadReport);
 
+// Get presigned url for s3 upload
+router.get("/presigned-url", protect, getPresignedUrl);
+
 // Create a new issue (students) - handling single image upload
-router.post("/", protect, uploadMiddleware.single("image"), createIssue);
+router.post("/", protect, createIssue);
 
 // Update issue status (warden only)
 router.put("/:id", protect, authorizeRoles("warden"), updateIssueStatus);

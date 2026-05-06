@@ -28,6 +28,12 @@ const IssueCard = ({ issue, role, currentUserId, onVerify, onToggle, onArchive }
     month: "short", day: "numeric", hour: "2-digit", minute: "2-digit"
   });
 
+  const getImageUrl = (image) => {
+    if (!image) return "";
+    if (image.startsWith("http")) return image;
+    return `${import.meta.env.VITE_API_URL || "http://localhost:8000"}${image}`;
+  };
+
   return (
     <>
       <div className="glass-panel animate-fade-in" style={{ padding: "24px", display: "flex", flexDirection: "column", gap: "16px" }}>
@@ -66,7 +72,7 @@ const IssueCard = ({ issue, role, currentUserId, onVerify, onToggle, onArchive }
             onClick={() => setIsModalOpen(true)}
           >
             <img 
-              src={`https://hostel-issue-tracker-1d9f.onrender.com${issue.image}`} 
+              src={getImageUrl(issue.image)} 
               alt="Issue attached" 
               style={{ width: "100%", height: "100%", objectFit: "cover", transition: "transform var(--transition-normal)" }} 
               onMouseOver={e => e.target.style.transform = "scale(1.05)"}
@@ -97,8 +103,10 @@ const IssueCard = ({ issue, role, currentUserId, onVerify, onToggle, onArchive }
                 <Button variant="warning" onClick={onToggle}>Revert to Pending</Button>
               )}
 
-              {isVerified && (
-                <Button variant="danger" onClick={onArchive}>Remove Issue</Button>
+              {!isPending && (
+                <Button variant="danger" onClick={onArchive}>
+                  {isVerified ? "Remove Issue" : "Force Remove (Evict)"}
+                </Button>
               )}
             </>
           )}
@@ -144,7 +152,7 @@ const IssueCard = ({ issue, role, currentUserId, onVerify, onToggle, onArchive }
             &times;
           </button>
           <img 
-            src={`https://hostel-issue-tracker-1d9f.onrender.com${issue.image}`} 
+            src={getImageUrl(issue.image)} 
             alt="Expanded view" 
             style={{ 
               maxWidth: "90vw", 

@@ -36,7 +36,7 @@ function StudentDashboard() {
 
   const fetchIssues = async () => {
     try {
-      const res = await axios.get("https://hostel-issue-tracker-1d9f.onrender.com/api/issues", {
+      const res = await axios.get(`${import.meta.env.VITE_API_URL || "http://localhost:8000"}/api/issues`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -69,22 +69,42 @@ function StudentDashboard() {
     setSubmitLoading(true);
     
     try {
-      const formData = new FormData();
-      formData.append("title", title);
-      formData.append("description", description);
-      formData.append("category", category);
-      formData.append("floor", Number(floor));
-      formData.append("roomNumber", roomNumber);
-      formData.append("issueDate", issueDate);
+      let imageUrl = null;
 
       if (image) {
-        formData.append("image", image);
+        // 1. Get pre-signed URL from our backend
+        const presignedRes = await axios.get(`${import.meta.env.VITE_API_URL || "http://localhost:8000"}/api/issues/presigned-url`, {
+          params: { fileName: image.name, fileType: image.type },
+          headers: { Authorization: `Bearer ${token}` }
+        });
+
+        const { uploadUrl, fileUrl } = presignedRes.data;
+
+        // 2. Upload the file directly to S3
+        await axios.put(uploadUrl, image, {
+          headers: {
+            "Content-Type": image.type,
+          },
+        });
+
+        imageUrl = fileUrl;
       }
 
-      await axios.post("https://hostel-issue-tracker-1d9f.onrender.com/api/issues", formData, {
+      // 3. Submit issue details to backend
+      const payload = {
+        title,
+        description,
+        category,
+        floor: Number(floor),
+        roomNumber: Number(roomNumber),
+        issueDate,
+        imageUrl
+      };
+
+      await axios.post(`${import.meta.env.VITE_API_URL || "http://localhost:8000"}/api/issues`, payload, {
         headers: {
           Authorization: `Bearer ${token}`,
-          "Content-Type": "multipart/form-data",
+          "Content-Type": "application/json",
         },
       });
 
@@ -107,7 +127,7 @@ function StudentDashboard() {
 
   const verifyIssue = async (id) => {
     try {
-      await axios.put(`https://hostel-issue-tracker-1d9f.onrender.com/api/issues/${id}/verify`, {}, {
+      await axios.put(`${import.meta.env.VITE_API_URL || "http://localhost:8000"}/api/issues/${id}/verify`, {}, {
         headers: { Authorization: `Bearer ${token}` },
       });
       fetchIssues();

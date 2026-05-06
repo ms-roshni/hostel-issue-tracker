@@ -13,6 +13,7 @@ function Register() {
     password: "",
   });
   const [error, setError] = useState("");
+  const [successMsg, setSuccessMsg] = useState("");
 
   const navigate = useNavigate();
 
@@ -23,11 +24,19 @@ function Register() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
+    setSuccessMsg("");
     try {
-      await axios.post("https://hostel-issue-tracker-1d9f.onrender.com/api/auth/register", form);
-      navigate("/");
+      await axios.post(`${import.meta.env.VITE_API_URL || "http://localhost:8000"}/api/auth/register`, form);
+      setSuccessMsg("Registration successful! Redirecting to login...");
+      setTimeout(() => {
+        navigate("/");
+      }, 2000);
     } catch (error) {
-      setError(error.response?.data?.message || "Registration failed. Try again.");
+      let errMsg = error.response?.data?.message || error.message || "Registration failed. Try again.";
+      if (errMsg.toLowerCase().includes("buffering timed out") || errMsg.toLowerCase().includes("network error")) {
+        errMsg = "Database connection error. Please try again later.";
+      }
+      setError(errMsg);
     }
   };
 
@@ -57,6 +66,16 @@ function Register() {
               fontSize: "0.9rem", textAlign: "center"
             }}>
               {error}
+            </div>
+          )}
+
+          {successMsg && (
+            <div style={{ 
+              background: "rgba(16, 185, 129, 0.1)", border: "1px solid rgba(16, 185, 129, 0.4)",
+              color: "var(--accent-success)", padding: "12px", borderRadius: "var(--radius-sm)",
+              fontSize: "0.9rem", textAlign: "center"
+            }}>
+              {successMsg}
             </div>
           )}
 

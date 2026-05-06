@@ -10,6 +10,14 @@ function WardenDashboard() {
   const [issues, setIssues] = useState([]);
   const [filteredIssues, setFilteredIssues] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [toastMsg, setToastMsg] = useState("");
+  
+  // Students
+  const [showStudentsModal, setShowStudentsModal] = useState(false);
+  const [studentsList, setStudentsList] = useState([]);
+
+  // Confirmation Modal
+  const [confirmArchiveId, setConfirmArchiveId] = useState(null);
 
   // Filters
   const [floorFilter, setFloorFilter] = useState("");
@@ -23,7 +31,7 @@ function WardenDashboard() {
 
   const fetchIssues = async () => {
     try {
-      const res = await axios.get("https://hostel-issue-tracker-1d9f.onrender.com/api/issues", {
+      const res = await axios.get(`${import.meta.env.VITE_API_URL || "http://localhost:8000"}/api/issues`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setIssues(res.data);
@@ -56,28 +64,56 @@ function WardenDashboard() {
   }, [floorFilter, categoryFilter, issues]);
 
 
+  const showToast = (msg) => {
+    setToastMsg(msg);
+    setTimeout(() => setToastMsg(""), 3000);
+  };
+
   // Actions
   const toggleStatus = async (id, currentStatus) => {
     const newStatus = currentStatus === "pending" ? "resolved" : "pending";
     try {
-      await axios.put(`https://hostel-issue-tracker-1d9f.onrender.com/api/issues/${id}`, { status: newStatus }, {
+      await axios.put(`${import.meta.env.VITE_API_URL || "http://localhost:8000"}/api/issues/${id}`, { status: newStatus }, {
         headers: { Authorization: `Bearer ${token}` },
       });
       fetchIssues();
+      showToast(newStatus === "resolved" ? "Issue marked as completed!" : "Issue reverted to pending.");
     } catch (error) {
       console.error(error);
+      showToast("Failed to update status.");
     }
   };
 
-  const archiveIssue = async (id) => {
-    if(!window.confirm("Are you sure you want to remove this completed issue?")) return;
+  const requestArchiveIssue = (id) => {
+    setConfirmArchiveId(id);
+  };
+
+  const executeArchiveIssue = async () => {
+    if (!confirmArchiveId) return;
     try {
-      await axios.put(`https://hostel-issue-tracker-1d9f.onrender.com/api/issues/${id}/archive`, {}, {
+      await axios.put(`${import.meta.env.VITE_API_URL || "http://localhost:8000"}/api/issues/${confirmArchiveId}/archive`, {}, {
         headers: { Authorization: `Bearer ${token}` },
       });
       fetchIssues();
+      showToast("Issue removed successfully.");
     } catch (error) {
       console.error(error);
+      showToast("Failed to remove issue.");
+    } finally {
+      setConfirmArchiveId(null);
+    }
+  };
+
+  const fetchStudents = async () => {
+    try {
+      const res = await axios.get(`${import.meta.env.VITE_API_URL || "http://localhost:8000"}/api/auth/students`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setStudentsList(res.data);
+      setShowStudentsModal(true);
+    } catch (error) {
+      console.error(error);
+      showToast("Failed to fetch active students.");
     }
   };
 
@@ -156,9 +192,14 @@ function WardenDashboard() {
             <h1 style={{ fontSize: "2rem", margin: 0 }}>Warden Control Panel</h1>
             <p style={{ color: "var(--text-secondary)", margin: 0 }}>Manage and track all hostel maintenance requests.</p>
           </div>
-          <Button variant="primary" onClick={downloadReport}>
-            <span style={{ marginRight: "8px" }}>📄</span> Download PDF Report
-          </Button>
+          <div style={{ display: "flex", gap: "10px" }}>
+            <Button variant="neutral" onClick={fetchStudents}>
+              <span>👥</span> View Active Students
+            </Button>
+            <Button variant="primary" onClick={downloadReport}>
+              <span style={{ marginRight: "8px" }}>📄</span> Download PDF Report
+            </Button>
+          </div>
         </div>
 
         {/* Dashboard Stats */}
@@ -267,7 +308,7 @@ function WardenDashboard() {
                     issue={issue}
                     role="warden"
                     onToggle={() => toggleStatus(issue._id, issue.status)}
-                    onArchive={() => archiveIssue(issue._id)}
+                    onArchive={() => requestArchiveIssue(issue._id)}
                   />
                 ))}
               </CollapsibleDateGroup>
@@ -276,6 +317,78 @@ function WardenDashboard() {
         )}
 
       </div>
+
+      {/* Toast Notification */}
+      {toastMsg && (
+        <div className="animate-fade-in" style={{
+          position: "fixed", bottom: "30px", left: "50%", transform: "translateX(-50%)",
+          background: "var(--accent-primary)", color: "white", padding: "12px 24px",
+          borderRadius: "30px", boxShadow: "0 10px 30px rgba(0,0,0,0.2)", zIndex: 9999,
+          fontWeight: "500", letterSpacing: "0.5px"
+        }}>
+          {toastMsg}
+        </div>
+      )}
+
+      {/* Active Students Modal */}
+      {showStudentsModal && (
+        <div style={{
+          position: "fixed", top: 0, left: 0, right: 0, bottom: 0,
+          backgroundColor: "rgba(0,0,0,0.6)", backdropFilter: "blur(5px)",
+          display: "flex", justifyContent: "center", alignItems: "center", zIndex: 5000
+        }}>
+          <div className="glass-panel animate-fade-in" style={{ width: "90%", maxWidth: "800px", maxHeight: "80vh", overflow: "hidden", display: "flex", flexDirection: "column" }}>
+            <div style={{ padding: "20px 24px", borderBottom: "1px solid var(--border-glass)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <h2 style={{ margin: 0, fontSize: "1.5rem" }}>Active Students ({studentsList.length})</h2>
+              <button onClick={() => setShowStudentsModal(false)} style={{ background: "transparent", border: "none", color: "var(--text-primary)", fontSize: "1.5rem", cursor: "pointer" }}>&times;</button>
+            </div>
+            <div style={{ padding: "24px", overflowY: "auto" }}>
+              {studentsList.length === 0 ? (
+                <p style={{ textAlign: "center", color: "var(--text-muted)" }}>No active students found.</p>
+              ) : (
+                <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left" }}>
+                  <thead>
+                    <tr style={{ borderBottom: "1px solid var(--border-glass)", color: "var(--text-secondary)" }}>
+                      <th style={{ padding: "12px 8px" }}>Name</th>
+                      <th style={{ padding: "12px 8px" }}>USN</th>
+                      <th style={{ padding: "12px 8px" }}>Phone No.</th>
+                      <th style={{ padding: "12px 8px" }}>Username</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {studentsList.map(student => (
+                      <tr key={student._id} style={{ borderBottom: "1px solid var(--border-glass)" }}>
+                        <td style={{ padding: "12px 8px", fontWeight: "500" }}>{student.name}</td>
+                        <td style={{ padding: "12px 8px", color: "var(--text-secondary)" }}>{student.usn}</td>
+                        <td style={{ padding: "12px 8px", color: "var(--text-secondary)" }}>{student.mobile}</td>
+                        <td style={{ padding: "12px 8px", color: "var(--text-primary)" }}>{student.username}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Confirmation Modal */}
+      {confirmArchiveId && (
+        <div style={{
+          position: "fixed", top: 0, left: 0, right: 0, bottom: 0,
+          backgroundColor: "rgba(0,0,0,0.6)", backdropFilter: "blur(5px)",
+          display: "flex", justifyContent: "center", alignItems: "center", zIndex: 6000
+        }}>
+          <div className="glass-panel animate-fade-in" style={{ width: "90%", maxWidth: "400px", padding: "30px 24px", textAlign: "center" }}>
+            <h3 style={{ marginTop: 0, fontSize: "1.25rem", color: "var(--text-primary)" }}>Confirm Eviction</h3>
+            <p style={{ color: "var(--text-secondary)", marginBottom: "30px" }}>Are you sure you want to remove this issue? This action cannot be undone.</p>
+            <div style={{ display: "flex", gap: "12px", justifyContent: "center" }}>
+              <Button variant="neutral" onClick={() => setConfirmArchiveId(null)}>Cancel</Button>
+              <Button variant="danger" onClick={executeArchiveIssue}>Confirm Remove</Button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }
