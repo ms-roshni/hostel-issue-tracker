@@ -42,9 +42,16 @@ const IssueCard = ({ issue, role, currentUserId, onVerify, onToggle, onArchive }
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
           <div>
             <h3 style={{ margin: "0 0 8px 0", fontSize: "1.25rem" }}>{issue.title}</h3>
-            <Badge variant={statusVariant}>{statusText}</Badge>
+            <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+              <Badge variant={statusVariant}>{statusText}</Badge>
+              {isVerified && issue.verifiedAt && (
+                <span style={{ fontSize: "0.8rem", color: "var(--accent-success)" }}>
+                  ✓ Verified on {new Date(issue.verifiedAt).toLocaleDateString()}
+                </span>
+              )}
+            </div>
           </div>
-          <span style={{ fontSize: "0.85rem", color: "var(--text-muted)" }}>{dateStr}</span>
+          <span style={{ fontSize: "0.85rem", color: "var(--text-muted)", alignSelf: "flex-start" }}>{dateStr}</span>
         </div>
 
         {/* Details Row */}
@@ -88,8 +95,12 @@ const IssueCard = ({ issue, role, currentUserId, onVerify, onToggle, onArchive }
           {role === "student" && issue.status === "resolved" && (
             // Only show verify button if they are the actual creator
             ((typeof issue.createdBy === 'object' ? issue.createdBy?._id === currentUserId : issue.createdBy === currentUserId) || !currentUserId) && (
-              <Button variant={isVerified ? "warning" : "success"} onClick={onVerify}>
-                {isVerified ? "Mark as Unverified" : "Mark as Verified"}
+              <Button 
+                variant={isVerified ? "success" : "primary"} 
+                onClick={!isVerified ? onVerify : undefined}
+                style={{ cursor: isVerified ? "default" : "pointer", opacity: isVerified ? 0.8 : 1 }}
+              >
+                {isVerified ? "Verified ✓" : "Verify Resolution"}
               </Button>
             )
           )}

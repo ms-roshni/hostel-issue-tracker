@@ -169,6 +169,10 @@ function WardenDashboard() {
     { value: "2", label: "Floor 2" },
     { value: "3", label: "Floor 3" },
     { value: "4", label: "Floor 4" },
+    { value: "5", label: "Floor 5" },
+    { value: "6", label: "Floor 6" },
+    { value: "7", label: "Floor 7" },
+    { value: "8", label: "Floor 8" },
   ];
 
   const categoryOptions = [

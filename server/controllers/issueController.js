@@ -121,9 +121,14 @@ exports.verifyIssue = async (req, res) => {
     }
 
     const newValue = !issue.studentVerified;
-    await Issue.updateOne({ _id: req.params.id }, { $set: { studentVerified: newValue } });
+    const verifiedAtValue = newValue ? new Date() : null;
+
+    await Issue.updateOne(
+      { _id: req.params.id }, 
+      { $set: { studentVerified: newValue, verifiedAt: verifiedAtValue } }
+    );
     
-    res.json({ message: "Verified toggled successfully", studentVerified: newValue });
+    res.json({ message: "Verification status toggled successfully", studentVerified: newValue, verifiedAt: verifiedAtValue });
   } catch (error) {
     console.error("VERIFY ISSUE ERROR:", error.message);
     res.status(500).json({ message: error.message });

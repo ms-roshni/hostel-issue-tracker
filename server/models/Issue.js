@@ -53,6 +53,10 @@ const issueSchema = new mongoose.Schema(
       default: false,
     },
 
+    verifiedAt: {
+      type: Date,
+    },
+
     // ✅ Soft delete
     isArchived: {
       type: Boolean,

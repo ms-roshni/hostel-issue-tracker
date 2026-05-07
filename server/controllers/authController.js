@@ -80,7 +80,7 @@ exports.login = async (req, res) => {
       name: user.name,
       username: user.username,
       role: user.role,
-      token: generateToken(user._id),
+      token: generateToken(user._id, user.role),
     });
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -119,7 +119,7 @@ exports.wardenLogin = async (req, res) => {
       name: warden.name,
       username: warden.username,
       role: warden.role,
-      token: generateToken(warden._id),
+      token: generateToken(warden._id, warden.role),
     });
   } catch (error) {
     res.status(500).json({ message: error.message });

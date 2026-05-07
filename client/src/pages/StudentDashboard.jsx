@@ -8,8 +8,10 @@ import IssueCard from "../components/UI/IssueCard";
 import CollapsibleDateGroup from "../components/UI/CollapsibleDateGroup";
 
 function StudentDashboard() {
+  const [allFetchedIssues, setAllFetchedIssues] = useState([]);
   const [issues, setIssues] = useState({});
   const [loading, setLoading] = useState(true);
+  const [viewFilter, setViewFilter] = useState("my"); // "my" or "all"
 
   // Form State
   const [title, setTitle] = useState("");
@@ -39,18 +41,7 @@ function StudentDashboard() {
       const res = await axios.get(`${import.meta.env.VITE_API_URL || "http://localhost:8000"}/api/issues`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-
-      const grouped = {};
-      res.data.forEach((issue) => {
-        // Group by creation date string
-        const dateObj = new Date(issue.issueDate || issue.createdAt);
-        const dateKey = dateObj.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
-        
-        if (!grouped[dateKey]) grouped[dateKey] = [];
-        grouped[dateKey].push(issue);
-      });
-
-      setIssues(grouped);
+      setAllFetchedIssues(res.data);
     } catch (error) {
       console.error(error);
     } finally {
@@ -62,6 +53,28 @@ function StudentDashboard() {
     fetchIssues();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Filter and group issues whenever data or filter changes
+  useEffect(() => {
+    const grouped = {};
+    
+    const filteredIssues = allFetchedIssues.filter(issue => {
+      if (viewFilter === "all") return true;
+      // For "my", ensure createdBy matches currentUserId
+      const creatorId = typeof issue.createdBy === 'object' ? issue.createdBy?._id : issue.createdBy;
+      return creatorId === currentUserId;
+    });
+
+    filteredIssues.forEach((issue) => {
+      const dateObj = new Date(issue.issueDate || issue.createdAt);
+      const dateKey = dateObj.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
+      
+      if (!grouped[dateKey]) grouped[dateKey] = [];
+      grouped[dateKey].push(issue);
+    });
+
+    setIssues(grouped);
+  }, [allFetchedIssues, viewFilter, currentUserId]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -175,10 +188,10 @@ function StudentDashboard() {
         </p>
       </div>
 
-      <div className="container" style={{ display: "flex", gap: "40px", flexWrap: "wrap", alignItems: "flex-start", paddingBottom: "60px" }}>
+      <div className="container dashboard-grid" style={{ paddingBottom: "60px" }}>
         
         {/* Left Side: Form Panel */}
-        <div className="glass-panel" style={{ flex: "1 1 450px", padding: "30px", position: "sticky", top: "100px" }}>
+        <div className="glass-panel form-panel" style={{ padding: "30px" }}>
           <h2 style={{ fontSize: "1.5rem", marginBottom: "20px" }}>Raise an Issue</h2>
           
           <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
@@ -259,8 +272,42 @@ function StudentDashboard() {
         </div>
 
         {/* Right Side: Feed Panel */}
-        <div style={{ flex: "2 1 600px", display: "flex", flexDirection: "column", gap: "30px" }}>
+        <div className="feed-panel" style={{ display: "flex", flexDirection: "column", gap: "30px" }}>
           
+          {/* Toggle Buttons */}
+          <div style={{ display: "flex", gap: "10px", background: "var(--bg-glass)", padding: "6px", borderRadius: "var(--radius-lg)", width: "fit-content" }}>
+            <button
+              onClick={() => setViewFilter("my")}
+              style={{
+                padding: "8px 20px",
+                borderRadius: "var(--radius-md)",
+                border: "none",
+                background: viewFilter === "my" ? "var(--accent-primary)" : "transparent",
+                color: viewFilter === "my" ? "white" : "var(--text-secondary)",
+                fontWeight: viewFilter === "my" ? "600" : "500",
+                cursor: "pointer",
+                transition: "all 0.2s"
+              }}
+            >
+              My Issues
+            </button>
+            <button
+              onClick={() => setViewFilter("all")}
+              style={{
+                padding: "8px 20px",
+                borderRadius: "var(--radius-md)",
+                border: "none",
+                background: viewFilter === "all" ? "var(--accent-primary)" : "transparent",
+                color: viewFilter === "all" ? "white" : "var(--text-secondary)",
+                fontWeight: viewFilter === "all" ? "600" : "500",
+                cursor: "pointer",
+                transition: "all 0.2s"
+              }}
+            >
+              All Issues
+            </button>
+          </div>
+
           {loading ? (
             <div style={{ textAlign: "center", padding: "40px", color: "var(--text-muted)" }}>Loading your issues...</div>
           ) : Object.keys(issues).length === 0 ? (
