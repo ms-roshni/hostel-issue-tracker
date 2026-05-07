@@ -1,154 +1,101 @@
-# Hostel Issue Tracker
+# Hostel Issue Tracking Platform
 
-A full-stack cloud-native issue tracking and lifecycle management platform built using the MERN stack and deployed on AWS using a serverless architecture.
-
-The application replaces informal hostel complaint workflows with a centralized platform featuring role-based dashboards, secure authentication, issue lifecycle management, and cloud-hosted image uploads.
+A full-stack cloud-native Hostel Issue Management Platform built using the MERN stack and AWS Serverless services. The application replaces informal complaint systems with a centralized workflow-driven platform featuring secure role-based dashboards for students and wardens.
 
 ---
 
-# 🚀 Live Deployment
+# Live Demo
 
-## Frontend (AWS S3 Static Hosting)
+Frontend (CloudFront CDN):  
+https://d1r0jtdsb204jf.cloudfront.net
 
-[http://roshni-hostel-frontend-2026.s3-website.ap-south-1.amazonaws.com](http://roshni-hostel-frontend-2026.s3-website.ap-south-1.amazonaws.com)
-
-## Backend API (AWS Lambda + API Gateway)
-
-[https://z21fggbpoe.execute-api.ap-south-1.amazonaws.com/dev](https://z21fggbpoe.execute-api.ap-south-1.amazonaws.com/dev)
+GitHub Repository:  
+https://github.com/ms-roshni/hostel-issue-tracker
 
 ---
 
-# ☁️ AWS Architecture
-
-This project was migrated from a traditional MERN deployment to a serverless AWS cloud architecture.
-
-### AWS Services Used
-
-* AWS Lambda
-* Amazon API Gateway
-* Amazon S3
-* AWS IAM
-* AWS CloudWatch
-* Serverless Framework
-
-### Cloud Features
-
-* Serverless Express backend deployment using AWS Lambda
-* API routing through Amazon API Gateway
-* Frontend static hosting using Amazon S3
-* Secure image uploads using S3 Pre-signed URLs
-* CloudWatch logging for backend monitoring
-* Infrastructure deployment using Serverless Framework
-
----
-
-# 🛠️ Tech Stack
+# Tech Stack
 
 ## Frontend
-
-* React.js (Vite)
-* Context API
-* Custom Responsive CSS
-* Dynamic Theme Toggle
+- React.js (Vite)
+- Context API
+- Responsive CSS
+- Mobile-first UI Design
 
 ## Backend
+- Node.js
+- Express.js
+- Serverless Framework
 
-* Node.js
-* Express.js
-* Serverless Framework
-* serverless-http
+## Cloud & DevOps
+- AWS Lambda
+- Amazon API Gateway
+- Amazon S3
+- Amazon CloudFront
 
-## Database
+## Database & Authentication
+- MongoDB Atlas
+- JWT Authentication
+- bcrypt.js
 
-* MongoDB Atlas
-* Mongoose
-
-## Authentication
-
-* JWT (JSON Web Tokens)
-* bcrypt.js
-
-## Cloud & Storage
-
-* AWS Lambda
-* Amazon API Gateway
-* Amazon S3
-* AWS IAM
-* AWS CloudWatch
+## File Uploads
+- Amazon S3 Pre-signed URL Uploads
+- Multer
 
 ---
 
-# 🔑 Key Features
+# Key Features
 
-## Role-Based Dashboards
+## Authentication & Security
+- Secure JWT-based authentication
+- Password hashing using bcrypt
+- Role-based authorization for Students and Wardens
+- Protected API routes
 
-Separate dashboards and authorization layers for:
+## Student Dashboard
+- Raise and track hostel complaints
+- Upload issue images directly to Amazon S3
+- Filter between:
+  - My Issues
+  - All Issues
+- Verify completed issues
+- Fully responsive mobile experience
 
-* Students
-* Wardens
+## Warden Dashboard
+- View all hostel complaints
+- Filter issues floor-wise
+- Update complaint status:
+  - Pending
+  - In Progress
+  - Resolved
+- Remove issues
+- View active students
 
-## Secure Authentication
-
-* JWT-based authentication
-* Password hashing using bcrypt
-* Protected API routes
-* Session persistence
-
-## Dynamic Issue Lifecycle
-
-Students can:
-
-* Submit complaints
-* Upload image evidence
-* Track issue status
-
-Wardens can:
-
-* View all complaints
-* Update issue statuses
-* Manage complaint resolution lifecycle
-
-Issue flow:
-
-Pending → In Progress → Resolved → Archived
-
-## Secure Cloud Image Uploads
-
-* Direct browser-to-S3 uploads using pre-signed URLs
-* Eliminates backend file handling bottlenecks
-* Images stored securely in Amazon S3
-
-## Fully Responsive UI
-
-* Mobile responsive design
-* Dark/Light theme toggle
-* Adaptive dashboard layouts
+## Cloud Deployment
+- Serverless backend deployed on AWS Lambda
+- API routing via API Gateway
+- Frontend hosted using Amazon S3 + CloudFront CDN
+- HTTPS-enabled production deployment
+- CDN caching and cache invalidation support
 
 ---
 
-# 📂 Project Structure
+# Architecture
 
-```bash
-hostel-app/
-│
-├── client/                     # React frontend
-│   ├── src/
-│   └── public/
-│
-├── server/                     # Express backend
-│   ├── controllers/
-│   ├── routes/
-│   ├── models/
-│   ├── middleware/
-│   ├── utils/
-│   └── serverless.yml
-│
-└── README.md
-```
+Frontend (React + CloudFront)  
+↓  
+API Gateway  
+↓  
+AWS Lambda (Express Server)  
+↓  
+MongoDB Atlas  
+
+Images Flow:  
+Frontend → S3 Pre-signed Upload → Amazon S3 Storage
 
 ---
 
-# 💻 Local Development Setup
+# Local Setup
 
 ## 1. Clone Repository
 
@@ -159,26 +106,28 @@ cd hostel-issue-tracker
 
 ---
 
-# ⚙️ Backend Setup
+# Backend Setup
+
+## 2. Navigate to Server
 
 ```bash
 cd server
 npm install
 ```
 
-Create a `.env` file inside the `server/` directory:
+## 3. Create `.env`
 
 ```env
-PORT=8000
 MONGO_URI=your_mongodb_connection_string
 JWT_SECRET=your_jwt_secret
-WARDEN_SECRET_KEY=your_warden_secret
-
+WARDEN_SECRET_KEY=your_secret_key
+AWS_S3_BUCKET_NAME=your_bucket_name
+AWS_ACCESS_KEY_ID=your_aws_access_key
+AWS_SECRET_ACCESS_KEY=your_aws_secret
 AWS_REGION=ap-south-1
-AWS_S3_BUCKET_NAME=your_s3_bucket_name
 ```
 
-Run backend locally:
+## 4. Run Backend Locally
 
 ```bash
 npm run dev
@@ -186,22 +135,16 @@ npm run dev
 
 ---
 
-# ⚙️ Frontend Setup
+# Frontend Setup
 
-Open a new terminal:
+## 5. Navigate to Client
 
 ```bash
 cd client
 npm install
 ```
 
-Create a `.env` file inside the `client/` directory:
-
-```env
-VITE_API_URL=http://localhost:8000
-```
-
-Run frontend locally:
+## 6. Start Frontend
 
 ```bash
 npm run dev
@@ -209,80 +152,44 @@ npm run dev
 
 ---
 
-# ☁️ AWS Deployment
+# AWS Deployment
 
 ## Backend Deployment
 
-Inside `server/`:
-
 ```bash
+cd server
 npx serverless deploy
 ```
 
-This deploys:
-
-* AWS Lambda functions
-* API Gateway routes
-* IAM permissions
-
----
-
 ## Frontend Deployment
 
-Inside `client/`:
+```bash
+cd client
+npm run build
+aws s3 sync dist/ s3://your-bucket-name
+```
+
+## CloudFront Cache Invalidation
 
 ```bash
-npm run build
-aws s3 sync dist/ s3://your-frontend-bucket-name
+aws cloudfront create-invalidation --distribution-id YOUR_DISTRIBUTION_ID --paths "/*"
 ```
 
 ---
 
-# 📸 Screenshots
 
-Add screenshots here:
+# Future Improvements
 
-* Login Page
-* Student Dashboard
-* Warden Dashboard
-* Complaint Submission
-* Image Upload Workflow
-* AWS Console Resources
-
----
-
-# 📚 Learning Outcomes
-
-This project demonstrates:
-
-* Full-stack MERN development
-* Cloud-native deployment workflows
-* Serverless architecture patterns
-* AWS Lambda integration
-* API Gateway routing
-* S3 object storage workflows
-* Secure image upload pipelines
-* Infrastructure as Code concepts
-* Production debugging and deployment
+- Email notifications
+- Push notifications
+- Complaint analytics dashboard
+- Hostel block segmentation
+- Admin panel
+- Real-time updates using WebSockets
 
 ---
 
-# 🔮 Future Improvements
+# Author
 
-* HTTPS via CloudFront
-* Custom domain integration
-* Email notifications using SNS/SES
-* Push notifications
-* Admin analytics dashboard
-* Role-based audit logs
-* Docker containerization
-* CI/CD pipeline automation
-
----
-
-# 👩‍💻 Author
-
-Roshni M S
-
-GitHub:
-[https://github.com/ms-roshni](https://github.com/ms-roshni)
+Roshni  
+B.Tech Student | MERN + AWS Cloud Enthusiast
