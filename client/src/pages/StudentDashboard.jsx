@@ -162,6 +162,48 @@ function StudentDashboard() {
 
   return (
     <>
+      <style>{`
+        /* Bulletproof Dashboard Responsive Layout */
+        .dashboard-wrapper {
+          display: flex;
+          flex-direction: column;
+          gap: 30px;
+          padding-bottom: 80px;
+          position: relative;
+        }
+        
+        .dashboard-form-panel {
+          flex: none;
+          position: static !important; /* Force disable sticky on mobile */
+          height: auto;
+          width: 100%;
+          z-index: 10;
+        }
+        
+        .dashboard-feed-panel {
+          flex: none;
+          position: static;
+          width: 100%;
+          z-index: 5;
+        }
+
+        /* Desktop Layout */
+        @media (min-width: 992px) {
+          .dashboard-wrapper {
+            flex-direction: row;
+            align-items: flex-start;
+          }
+          .dashboard-form-panel {
+            flex: 0 0 400px;
+            position: sticky !important;
+            top: 100px;
+          }
+          .dashboard-feed-panel {
+            flex: 1;
+            min-width: 0;
+          }
+        }
+      `}</style>
       <Navbar role="student" onContactClick={() => setContactModalOpen(true)} />
       
       {/* Hero Section */}
@@ -188,10 +230,10 @@ function StudentDashboard() {
         </p>
       </div>
 
-      <div className="container dashboard-grid" style={{ paddingBottom: "60px" }}>
+      <div className="container dashboard-wrapper">
         
         {/* Left Side: Form Panel */}
-        <div className="glass-panel form-panel" style={{ padding: "30px" }}>
+        <div className="glass-panel dashboard-form-panel" style={{ padding: "30px" }}>
           <h2 style={{ fontSize: "1.5rem", marginBottom: "20px" }}>Raise an Issue</h2>
           
           <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
@@ -272,7 +314,7 @@ function StudentDashboard() {
         </div>
 
         {/* Right Side: Feed Panel */}
-        <div className="feed-panel" style={{ display: "flex", flexDirection: "column", gap: "30px" }}>
+        <div className="dashboard-feed-panel" style={{ display: "flex", flexDirection: "column", gap: "30px" }}>
           
           {/* Toggle Buttons */}
           <div style={{ display: "flex", gap: "10px", background: "var(--bg-glass)", padding: "6px", borderRadius: "var(--radius-lg)", width: "fit-content" }}>
